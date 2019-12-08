@@ -1,0 +1,19 @@
+- hosts: gluster,myworkstation
+  gather_facts: no
+  vars:
+    extra_disk: true
+  tasks:
+    - include: include/deploy.yml
+    - include: include/pool.yml
+    - include: include/bricks.yml
+
+    - gluster_volume:
+         state: present
+         name: test1
+         bricks: /mnt/vdb/brick
+         rebalance: yes
+         cluster:
+           - gluster1.example.com
+           - gluster2.example.com
+           - gluster3.example.com
+      run_once: true

@@ -1,0 +1,7 @@
+- hosts: gluster,myworkstation
+  gather_facts: no
+  vars:
+    extra_disk: true
+  tasks:
+    - include: include/deploy.yml
+    - include: include/pool.yml

@@ -1,0 +1,18 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+### rht-vm-hosts file listing the entries to be appended to /etc/hosts
+
+172.25.250.8	manager.lab.example.com manager
+172.25.250.10	servera.lab.example.com servera
+172.25.250.11	serverb.lab.example.com serverb
+172.25.250.12	serverc.lab.example.com serverc
+172.25.250.13	serverd.lab.example.com serverd
+172.25.250.14	servere.lab.example.com servere
+172.25.250.254	workstation.lab.example.com workstation
+
+10.10.10.11 gluster1 gluster1.example.com
+10.10.10.12 gluster2 gluster2.example.com
+10.10.10.13 gluster3 gluster3.example.com
+
+10.10.10.15 myworkstation myworkstaton.example.com
+

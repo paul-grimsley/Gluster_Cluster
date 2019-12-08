@@ -1,0 +1,16 @@
+<network ipv6='yes'>
+  <name>net99</name>
+  <forward mode='nat'>
+    <nat>
+      <port start='1024' end='65535'/>
+    </nat>
+  </forward>
+  <bridge name='net991' stp='on' delay='0'/>
+  <mac address='52:54:00:86:b1:90'/>
+  <ip address='10.10.10.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='10.10.10.2' end='10.10.10.10'/>
+    </dhcp>
+  </ip>
+</network>
+

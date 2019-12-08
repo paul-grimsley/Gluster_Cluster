@@ -1,0 +1,13 @@
+#localhost ansible_connection=smart
+gluster1 id=11
+gluster2 id=12
+gluster3 id=13
+
+myworkstation id=15
+
+[gluster]
+gluster1
+gluster2
+gluster3
+
+
