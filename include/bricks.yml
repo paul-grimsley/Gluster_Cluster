@@ -1,0 +1,24 @@
+    - filesystem:
+        fstype: xfs
+        dev: "{{ item }}"
+      with_items:
+         - /dev/vdb
+         - /dev/vdc
+         - /dev/vdd
+    - mount:
+        path: /mnt/{{ item }}
+        src: /dev/{{ item }}
+        fstype: xfs
+        state: mounted
+      with_items:
+         - vdb
+         - vdc
+         - vdd
+    - file:
+         state: directory
+         path: /mnt/{{ item }}/brick
+      with_items:
+          - vdb
+          - vdc
+          - vdd
+

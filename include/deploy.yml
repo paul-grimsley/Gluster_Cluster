@@ -1,0 +1,113 @@
+#    - copy:
+#       src: sshkey1
+#       dest: /root/.ssh/sshkey1
+#      delegate_to: localhost
+#      run_once: true
+#    - copy:
+#       src: sshkey1.pub
+#       dest: /root/.ssh/sshkey1.pub
+#      delegate_to: localhost
+#      run_once: true
+    - copy:
+        src: hosts
+        dest: /etc/hosts
+      delegate_to: localhost
+      run_once: true
+    - yum:
+        name: libguestfs-tools
+        state: latest
+      delegate_to: localhost
+      run_once: true
+    - copy:
+        src: centos7.qcow2
+        dest: /var/lib/libvirt/images/centos7.qcow2
+        owner: qemu
+      delegate_to: localhost
+      ignore_errors: true
+      run_once: true
+    - shell: "virsh net-define net99.xml"
+      delegate_to: localhost
+      ignore_errors: true
+      run_once: true
+    - name: starting net99
+      shell: "virsh net-start net99"
+      delegate_to: localhost
+      ignore_errors: true
+      run_once: true
+    - shell: "virsh destroy {{ inventory_hostname }}"
+      delegate_to: localhost
+      tags: destroy, stop
+      ignore_errors: true
+    - shell: "virsh undefine {{ inventory_hostname }}"
+      delegate_to: localhost
+      ignore_errors: true
+      tags: destroy
+    - file:
+        name: /var/lib/libvirt/images/{{ inventory_hostname }}*.qcow2
+        state: absent
+      delegate_to: localhost
+      tags: destroy
+    - shell: "qemu-img create -f qcow2 /var/lib/libvirt/images/{{ inventory_hostname }}-{{ item }}.qcow2 20G"
+      delegate_to: localhost
+      with_items: [1,2,3]
+      when: extra_disk == true
+    - shell: "qemu-img create -b /var/lib/libvirt/images/centos7.qcow2 -f qcow2 /var/lib/libvirt/images/{{ inventory_hostname }}.qcow2 200G"
+      delegate_to: localhost
+    - shell: "virt-edit /var/lib/libvirt/images/{{ inventory_hostname }}.qcow2 /etc/sysconfig/network-scripts/ifcfg-eth0 -e 's/99/{{ id }}/'"
+      delegate_to: localhost
+      ignore_errors: true
+    - copy:
+        src: vm.xml
+        dest: "tmp/{{ inventory_hostname }}.xml"
+      delegate_to: localhost
+    - lineinfile:
+        path: "tmp/{{ inventory_hostname }}.xml"
+        state: present
+        regexp: '<name>NAME</name>'
+        line: '<name>{{ inventory_hostname }}</name>'
+      delegate_to: localhost
+    - lineinfile:
+        path: "tmp/{{ inventory_hostname }}.xml"
+        state: present
+        regexp: "<source file='/var/lib/libvirt/images/NAME.qcow2'/>"
+        line: "<source file='/var/lib/libvirt/images/{{ inventory_hostname }}.qcow2'/>"
+      delegate_to: localhost
+
+
+    - lineinfile:
+        path: "tmp/{{ inventory_hostname }}.xml"
+        state: present
+        insertafter: </disk>
+        #regexp: "<source file='/var/lib/libvirt/images/NAME-{{ item }}.qcow2'/>"
+        line: "<disk type='file' device='disk'><driver name='qemu' type='qcow2'/><source file='/var/lib/libvirt/images/{{ inventory_hostname }}-{{ item.diskid }}.qcow2'/><target dev='{{ item.device }}' bus='virtio'/><address type='pci' domain='0x0000' bus='0x00' slot='0x{{ item.slot }}' function='0x0'/></disk>"
+      delegate_to: localhost
+      with_items: 
+          - { device: vdb, slot: 9, diskid: 1 }
+          - { device: vdc, slot: 10, diskid: 2 }
+          - { device: vdd, slot: 11, diskid: 3 }
+
+
+
+    - lineinfile:
+        path: "tmp/{{ inventory_hostname }}.xml"
+        state: present
+        regexp: "<mac address='52:54:00:6e:b7:AA'/>"
+        line: "<mac address='52:54:00:6e:b7:{{ id }}'/>"
+      delegate_to: localhost
+    - shell: "virsh define tmp/{{ inventory_hostname }}.xml"
+      delegate_to: localhost
+    - shell: "virsh start {{ inventory_hostname }}"
+      delegate_to: localhost
+#    - wait_for:
+#        connect_timeout: 100
+#        delay: 15
+#        host: "{{ inventory_hostname }}"
+#      delegate_to: localhost
+    - pause:
+        seconds: 15
+    - hostname:
+        name: "{{ inventory_hostname }}.example.com"
+    - copy:
+        src: hosts
+        dest: /etc/hosts
+

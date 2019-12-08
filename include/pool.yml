@@ -1,0 +1,10 @@
+    - service:
+        enabled: true
+        state: started
+        name: glusterd
+      when: inventory_hostname != "myworkstation"
+    - shell:  gluster peer probe gluster{{ item }}.example.com
+      run_once: true
+      delegate_to: gluster1
+      with_items: [2,3]
+
